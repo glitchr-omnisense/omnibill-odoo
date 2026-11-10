@@ -1,0 +1,26 @@
+{
+    "$schema": "https://github.com/glitchr-omnisense/contracts/blob/1.x/resources/usage-policy.schema.json",
+    "provider": "odoo",
+    "rateLimits": null,
+    "rights": {
+        "commercial": "contract",
+        "openSourceRequired": null,
+        "caching": {
+            "permission": "unknown"
+        },
+        "storage": "unknown",
+        "redistribution": "unknown",
+        "attribution": {
+            "required": false
+        }
+    },
+    "requirements": {
+        "key": true
+    },
+    "provenance": {
+        "terms": "https://www.odoo.com/documentation/19.0/developer/reference/external_api.html",
+        "notes": "Limits unknown: Odoo's external API reference states no rate limit nor quota (Odoo Online databases have been seen answering 429, no figure published); a self-hosted database's limits are its own. Commercial declared as 'contract': on Odoo Online the external API is only available on the Custom pricing plan (not One App Free nor Standard); a self-hosted Community edition is free. An API key is a user's, lasts three months at most (rotate it), up to 10 keys a user programmatically. XML-RPC and JSON-RPC are removed in Odoo 22 (fall 2028) / Online 21.1 (winter 2027); this package calls JSON-2 (/json/2). Storage, caching and redistribution: the reference does not say.",
+        "verifiedAt": "2026-11-10",
+        "declaredBy": "maintainer"
+    }
+}

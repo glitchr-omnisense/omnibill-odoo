@@ -22,6 +22,12 @@ Written from Odoo 19's external API documentation and its server's code, read on
 [Documentation](docs/index.md): the calls, the options, how entries and contacts map, what is not
 carried, Odoo's terms.
 
+## Usage policy
+
+`policy.json`, read on 2026-11-10 in [Odoo's external API reference](https://www.odoo.com/documentation/19.0/developer/reference/external_api.html):
+no rate limit published (declared unknown); on Odoo Online the external API needs the Custom plan
+(commercial use `contract`); a key lasts three months at most.
+
 ## Responsibility
 
 This package is an independent, unofficial client: it is not affiliated with, endorsed by or

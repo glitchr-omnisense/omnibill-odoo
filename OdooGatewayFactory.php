@@ -12,6 +12,7 @@ use Omnibill\Odoo\Action\ListContactsAction;
 use Omnibill\Odoo\Action\ListEntriesAction;
 use Omnibill\Odoo\Action\PostEntryAction;
 use Omnibill\Odoo\Action\SaveContactAction;
+use Omnisense\Contracts\Policy\UsagePolicy;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -30,6 +31,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class OdooGatewayFactory extends GatewayFactory
 {
+    private static ?UsagePolicy $policy = null;
+
     public function __construct(private readonly ?HttpClientInterface $http = null)
     {
     }
@@ -51,6 +54,12 @@ final class OdooGatewayFactory extends GatewayFactory
         );
     }
 
+    /** Its usage policy, as policy.json declares it (read once). */
+    public static function usagePolicy(): UsagePolicy
+    {
+        return self::$policy ??= UsagePolicy::fromFile(__DIR__.'/policy.json');
+    }
+
     protected function populateConfig(Config $config): void
     {
         $config->defaults([
@@ -61,7 +70,7 @@ final class OdooGatewayFactory extends GatewayFactory
             'company_id' => null,
             'post' => true,
             'lang' => null,
-            'omnibill.capabilities' => new Capabilities([], approved: false, publicSector: false, contracts: [Capabilities::JOURNAL_ENTRIES, Capabilities::CONTACTS], terms: self::terms()),
+            'omnibill.capabilities' => new Capabilities([], approved: false, publicSector: false, contracts: [Capabilities::JOURNAL_ENTRIES, Capabilities::CONTACTS], terms: self::terms(), policy: self::usagePolicy()),
             'omnibill.api' => fn (Config $c) => new Api(
                 $this->http ?? HttpClient::create(),
                 rtrim(self::text($c['url']), '/'),
@@ -69,6 +78,7 @@ final class OdooGatewayFactory extends GatewayFactory
                 '' !== ($database = self::text($c->get('database'))) ? $database : null,
                 is_numeric($company = $c->get('company_id')) ? (int) $company : null,
                 '' !== ($lang = self::text($c->get('lang'))) ? $lang : null,
+                $c->backoff(),
             ),
             'omnibill.action.post_entry' => static fn (Config $c) => new PostEntryAction($c->bool('post')),
             'omnibill.action.fetch_entry' => new FetchEntryAction(),

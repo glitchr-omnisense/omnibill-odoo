@@ -5,6 +5,7 @@ namespace Omnibill\Odoo;
 use Omnibill\Exception\InvalidKeyException;
 use Omnibill\Exception\ProviderException;
 use Omnibill\Http\Answer;
+use Omnisense\Contracts\Policy\Backoff;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -30,6 +31,7 @@ final class Api
         private readonly ?string $database = null,
         private readonly ?int $companyId = null,
         private readonly ?string $lang = null,
+        private readonly ?Backoff $backoff = null,
     ) {
     }
 
@@ -49,7 +51,7 @@ final class Api
             $headers['X-Odoo-Database'] = $this->database;
         }
         $path = '/json/2/'.$model.'/'.$method;
-        $answer = Answer::send($this->http, self::PROVIDER, 'POST', $this->url.$path, ['headers' => $headers, 'body' => json_encode((object) $arguments, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)]);
+        $answer = Answer::send($this->http, self::PROVIDER, 'POST', $this->url.$path, ['headers' => $headers, 'body' => json_encode((object) $arguments, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)], $this->backoff);
         $data = json_decode($answer->body, true);
         if (401 === $answer->status) {
             throw new InvalidKeyException(self::PROVIDER, \sprintf('The API key was refused (HTTP 401): %s', self::message($data, $answer)), '401');
