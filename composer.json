@@ -1,0 +1,44 @@
+{
+    "name": "omnibill/odoo",
+    "type": "library",
+    "description": "Omnibill Odoo: Odoo's accounting (Odoo 19 and later, Online or self-hosted) for omnisense/omnibill's journal-entries and contacts contracts - entries posted to a journal with their accounts, partners and VAT lines, then posted and read back with their number; customers and suppliers created, updated, read, listed - through Odoo's external JSON-2 API with a user's API key (XML-RPC and JSON-RPC, removed in Odoo 22, are never called).",
+    "keywords": [
+        "accounting",
+        "odoo",
+        "journal-entries",
+        "json-2",
+        "omnibill"
+    ],
+    "homepage": "https://github.com/glitchr-omnisense/omnibill-odoo",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marco Meyer",
+            "email": "marco.meyer@glitchr.io"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "omnisense/omnibill": "^1.1@dev",
+        "symfony/http-client": "^6.4|^7.0|^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Omnibill\\Odoo\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnibill\\Odoo\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

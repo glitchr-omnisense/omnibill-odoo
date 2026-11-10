@@ -1,0 +1,1 @@
+[{"id":101,"account_id":[31,"615 Entretien et réparations"],"partner_id":false,"name":"Électricité novembre","debit":100.0,"credit":0.0},{"id":102,"account_id":[44,"44566 TVA déductible"],"partner_id":false,"name":"TVA 20 %","debit":20.0,"credit":0.0},{"id":103,"account_id":[12,"401EDF EDF"],"partner_id":[57,"EDF"],"name":"Électricité novembre","debit":0.0,"credit":120.0}]
