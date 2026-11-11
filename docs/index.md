@@ -56,6 +56,7 @@ external API is open on the Custom plan only. Keys go by reference (`%env(ODOO_A
 | `saveContact()` | `res.country/search_read` (the country by `code`), `res.partner/create` (`name`, `email`, `vat`, `company_registry`: the SIRET or the SIREN, `is_company`, `ref`: the key, `customer_rank` or `supplier_rank` 1, `street`, `zip`, `city`, `country_id`, the IBAN as `bank_ids`) - `res.partner/write` when it has its reference (no new bank account) |
 | `fetchContact()` | `res.partner/read`, `res.country/read` |
 | `contacts()` | `res.partner/search_read` on `customer_rank > 0` or `supplier_rank > 0` and `name =ilike <search>%`, by name; the cursor is the offset |
+| `findContact()` | since omnibill 1.3: `res.partner/search_read` on `ref = <key>` (the key `saveContact()` wrote), by `id`, `limit` 10; the first of the contact's kind (`supplier_rank` or `customer_rank` above 0), else the first - `ref` is a plain Char of the base module, not unique - then `res.country/read` for its country; `null` when none. An archived partner is not searched (Odoo's `active` filter). A contact without a key: `InvalidConfigException` |
 
 | `state` | `EntryStatus` |
 |---|---|
@@ -90,7 +91,7 @@ three months at most; JSON-2 only; a transaction per call.
 | 403 (`AccessError`), 404 (`MissingError`, an unknown model or method), 422 (`UserError`, `ValidationError`: an entry not balanced, a lock date), 409 | `ProviderException`, `providerCode` Odoo's exception name (`odoo.exceptions.UserError`); the traceback (`debug`) is never carried |
 | a journal, an account, a partner, a country not found | `ProviderException`, code `not_found` |
 | an entry that does not balance | `InvalidConfigException`, before any call |
-| a 5xx or a timeout to a call that writes (`create`, `write`, `action_post`...) | `OutcomeUnknownException` (an `UnreachableException`): the move may be there - `findEntry()` before posting again |
+| a 5xx or a timeout to a call that writes (`create`, `write`, `action_post`...) | `OutcomeUnknownException` (an `UnreachableException`): the move or the partner may be there - `findEntry()` or `findContact()` (since omnibill 1.3) before writing again |
 | 429, 5xx, no answer to a read (`search_read`, `read`); a host that did not resolve | `UnreachableException` |
 
 ## Example in Symfony

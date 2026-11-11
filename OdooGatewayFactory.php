@@ -8,6 +8,7 @@ use Omnibill\Model\Capabilities;
 use Omnibill\Model\Terms;
 use Omnibill\Odoo\Action\FetchContactAction;
 use Omnibill\Odoo\Action\FetchEntryAction;
+use Omnibill\Odoo\Action\FindContactAction;
 use Omnibill\Odoo\Action\FindEntryAction;
 use Omnibill\Odoo\Action\ListContactsAction;
 use Omnibill\Odoo\Action\ListEntriesAction;
@@ -88,6 +89,7 @@ final class OdooGatewayFactory extends GatewayFactory
             'omnibill.action.save_contact' => new SaveContactAction(),
             'omnibill.action.fetch_contact' => new FetchContactAction(),
             'omnibill.action.list_contacts' => new ListContactsAction(),
+            'omnibill.action.find_contact' => new FindContactAction(),
         ]);
     }
 

@@ -14,6 +14,7 @@ $books = (new OdooGatewayFactory($httpClient))->create(['url' => 'https://mycomp
 $entry = $books->postEntry($journalEntry);   // account.move created, posted, read back: its number
 $books->fetchEntry($entry);                  // its lines, on their accounts' codes
 $books->saveContact($supplier);              // res.partner, supplier_rank 1
+$books->findContact($supplier);              // after an OutcomeUnknownException: the partner whose ref is its key, or null
 ```
 
 Written from Odoo 19's external API documentation and its server's code, read on 2026-11-10.
