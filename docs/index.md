@@ -49,8 +49,9 @@ external API is open on the Custom plan only. Keys go by reference (`%env(ODOO_A
 
 | | |
 |---|---|
-| `postEntry()` | `account.journal/search_read` (the journal by `code`), `account.account/search_read` (the accounts by `code`), `res.partner/search_read` (the lines' contacts by `ref`; a contact no partner carries, made of digits, is taken as the partner's id), `account.move/create` (`move_type: entry`, `journal_id`, `date`, `ref`: the piece, or the key; `line_ids` as `[0, 0, {account_id, partner_id, name, debit, credit}]`), `account.move/action_post` unless `post: false`, `account.move/read` (`name`: the number, `state`) |
+| `postEntry()` | `account.journal/search_read` (the journal by `code`), `account.account/search_read` (the accounts by `code`), `res.partner/search_read` (the lines' contacts by `ref`; a contact no partner carries, made of digits, is taken as the partner's id), `account.move/create` (`move_type: entry`, `journal_id`, `date`, `ref`: the piece, or the key; `narration`: `[omnibill:<key>]` since omnibill 1.2; `line_ids` as `[0, 0, {account_id, partner_id, name, debit, credit}]`), `account.move/action_post` unless `post: false`, `account.move/read` (`name`: the number, `state`) |
 | `fetchEntry()` | `account.move/read`, `account.move.line/read` (its `line_ids`), `account.account/read` and `account.journal/read` for the codes |
+| `findEntry()` | since omnibill 1.2: `account.move/search_read` on `move_type = entry`, the entry's `date`, `journal_id.code`, and `ref = <key>` or `narration ilike [omnibill:<key>]`; the match checked on the answer (`ilike` is a substring). `account.move`'s `ref` is a Char, its `narration` an Html field (Odoo 19's `addons/account/models/account_move.py`, read 2026-11-11). An entry posted before 1.2 with a piece has its key nowhere: not found |
 | `entries()` | `account.move/search_read` on `move_type = entry`, the dates, `journal_id.code`; `date desc, id desc`; the cursor is the offset |
 | `saveContact()` | `res.country/search_read` (the country by `code`), `res.partner/create` (`name`, `email`, `vat`, `company_registry`: the SIRET or the SIREN, `is_company`, `ref`: the key, `customer_rank` or `supplier_rank` 1, `street`, `zip`, `city`, `country_id`, the IBAN as `bank_ids`) - `res.partner/write` when it has its reference (no new bank account) |
 | `fetchContact()` | `res.partner/read`, `res.country/read` |
@@ -89,7 +90,8 @@ three months at most; JSON-2 only; a transaction per call.
 | 403 (`AccessError`), 404 (`MissingError`, an unknown model or method), 422 (`UserError`, `ValidationError`: an entry not balanced, a lock date), 409 | `ProviderException`, `providerCode` Odoo's exception name (`odoo.exceptions.UserError`); the traceback (`debug`) is never carried |
 | a journal, an account, a partner, a country not found | `ProviderException`, code `not_found` |
 | an entry that does not balance | `InvalidConfigException`, before any call |
-| 429, 5xx, no answer | `UnreachableException` |
+| a 5xx or a timeout to a call that writes (`create`, `write`, `action_post`...) | `OutcomeUnknownException` (an `UnreachableException`): the move may be there - `findEntry()` before posting again |
+| 429, 5xx, no answer to a read (`search_read`, `read`); a host that did not resolve | `UnreachableException` |
 
 ## Example in Symfony
 

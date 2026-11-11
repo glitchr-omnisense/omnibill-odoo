@@ -19,6 +19,9 @@ final class Api
 {
     public const PROVIDER = 'odoo';
 
+    /** The methods that read: any other call (create, write, action_post...) is a write for Answer::send(). */
+    public const READS = ['search_read', 'read', 'search', 'search_count', 'fields_get', 'read_group', 'name_search', 'web_search_read', 'web_read'];
+
     /**
      * @param string      $url       the instance's root: https://mycompany.odoo.com
      * @param string|null $database  X-Odoo-Database, when the server hosts several and its dbfilter does not follow the host
@@ -51,7 +54,7 @@ final class Api
             $headers['X-Odoo-Database'] = $this->database;
         }
         $path = '/json/2/'.$model.'/'.$method;
-        $answer = Answer::send($this->http, self::PROVIDER, 'POST', $this->url.$path, ['headers' => $headers, 'body' => json_encode((object) $arguments, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)], $this->backoff);
+        $answer = Answer::send($this->http, self::PROVIDER, 'POST', $this->url.$path, ['headers' => $headers, 'body' => json_encode((object) $arguments, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)], $this->backoff, !\in_array($method, self::READS, true));
         $data = json_decode($answer->body, true);
         if (401 === $answer->status) {
             throw new InvalidKeyException(self::PROVIDER, \sprintf('The API key was refused (HTTP 401): %s', self::message($data, $answer)), '401');

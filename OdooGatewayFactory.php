@@ -8,6 +8,7 @@ use Omnibill\Model\Capabilities;
 use Omnibill\Model\Terms;
 use Omnibill\Odoo\Action\FetchContactAction;
 use Omnibill\Odoo\Action\FetchEntryAction;
+use Omnibill\Odoo\Action\FindEntryAction;
 use Omnibill\Odoo\Action\ListContactsAction;
 use Omnibill\Odoo\Action\ListEntriesAction;
 use Omnibill\Odoo\Action\PostEntryAction;
@@ -83,6 +84,7 @@ final class OdooGatewayFactory extends GatewayFactory
             'omnibill.action.post_entry' => static fn (Config $c) => new PostEntryAction($c->bool('post')),
             'omnibill.action.fetch_entry' => new FetchEntryAction(),
             'omnibill.action.list_entries' => new ListEntriesAction(),
+            'omnibill.action.find_entry' => new FindEntryAction(),
             'omnibill.action.save_contact' => new SaveContactAction(),
             'omnibill.action.fetch_contact' => new FetchContactAction(),
             'omnibill.action.list_contacts' => new ListContactsAction(),

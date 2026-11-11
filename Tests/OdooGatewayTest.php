@@ -5,6 +5,8 @@ namespace Omnibill\Odoo\Tests;
 use Omnibill\Exception\InvalidConfigException;
 use Omnibill\Exception\InvalidKeyException;
 use Omnibill\Exception\NotSupportedException;
+use Omnibill\Exception\OutcomeUnknownException;
+use Omnibill\Exception\UnreachableException;
 use Omnibill\Exception\ProviderException;
 use Omnibill\Gateway;
 use Omnibill\Model\Address;
@@ -17,6 +19,7 @@ use Omnibill\Model\JournalEntry;
 use Omnibill\Model\Vat;
 use Omnibill\Model\VatKind;
 use Omnibill\Odoo\OdooGatewayFactory;
+use Omnibill\Request\Accounting\FindEntry;
 use Omnibill\Request\Submit;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -93,7 +96,7 @@ final class OdooGatewayTest extends TestCase
         self::assertSame(['/json/2/account.account/search_read', ['domain' => [['code', 'in', ['615', '44566', '401EDF']]], 'fields' => ['id', 'code']]], $this->call(1));
         self::assertSame(['/json/2/res.partner/search_read', ['domain' => [['ref', 'in', ['supplier:edf']]], 'fields' => ['id', 'ref']]], $this->call(2));
         self::assertSame(['/json/2/account.move/create', ['vals_list' => [[
-            'move_type' => 'entry', 'journal_id' => 2, 'date' => '2026-11-10', 'ref' => 'EDF-2026-11',
+            'move_type' => 'entry', 'journal_id' => 2, 'date' => '2026-11-10', 'ref' => 'EDF-2026-11', 'narration' => '[omnibill:bill:edf-2026-11]',
             'line_ids' => [
                 [0, 0, ['account_id' => 31, 'name' => 'Électricité novembre', 'debit' => 100, 'credit' => 0]],
                 [0, 0, ['account_id' => 44, 'name' => 'TVA 20 %', 'debit' => 20, 'credit' => 0]],
@@ -186,6 +189,36 @@ final class OdooGatewayTest extends TestCase
         self::assertSame(['domain' => [['supplier_rank', '>', 0], ['name', '=ilike', 'ED%']], 'fields' => ['id', 'name', 'email', 'vat', 'company_registry', 'is_company', 'ref', 'customer_rank', 'supplier_rank', 'street', 'zip', 'city', 'country_id'], 'limit' => 10, 'order' => 'name'], $this->call(0)[1]);
         self::assertSame(['57'], array_map(static fn ($c) => $c->reference, $list->contacts));
         self::assertNull($list->cursor);
+    }
+
+    public function testAnEntryWhoseOutcomeIsUnknownIsFoundAgainByItsKey(): void
+    {
+        try {
+            $this->gateway(['journal', 'accounts', 'partners', 'error-503:503'])->postEntry(self::bill());
+            self::fail();
+        } catch (OutcomeUnknownException $e) {
+            self::assertSame('503', $e->providerCode, 'account.move/create may have been taken');
+        }
+        try {
+            $this->gateway(['error-503:503'])->postEntry(self::bill());
+            self::fail();
+        } catch (UnreachableException $e) {
+            self::assertNotInstanceOf(OutcomeUnknownException::class, $e, 'a search_read writes nothing');
+        }
+
+        $this->calls = [];
+        $gateway = $this->gateway(['found', 'found-other', 'none']);
+        self::assertTrue($gateway->supports(FindEntry::class));
+        $found = $gateway->findEntry(self::bill());
+        self::assertSame(['/json/2/account.move/search_read', [
+            'domain' => [['move_type', '=', 'entry'], ['date', '=', '2026-11-10'], ['journal_id.code', '=', 'AC'], '|', ['ref', '=', 'bill:edf-2026-11'], ['narration', 'ilike', '[omnibill:bill:edf-2026-11]']],
+            'fields' => ['name', 'state', 'date', 'ref', 'journal_id', 'narration'], 'limit' => 10, 'order' => 'id asc',
+        ]], $this->call(0));
+        self::assertSame(['42', 'ACH/2026/11/0001', EntryStatus::POSTED, 'bill:edf-2026-11'], [$found?->reference, $found?->number, $found?->status, $found?->key]);
+        self::assertNull($gateway->findEntry(self::bill()), 'ilike matched a longer key: not this entry');
+        self::assertNull($gateway->findEntry(self::bill()));
+        $this->expectException(InvalidConfigException::class);
+        $gateway->findEntry(new JournalEntry('AC', new \DateTimeImmutable('2026-11-10'), 'No key'));
     }
 
     public function testErrors(): void

@@ -135,6 +135,12 @@ abstract class AbstractAction implements ActionInterface, ApiAwareInterface
         );
     }
 
+    /** The entry's key as the narration carries it: "[omnibill:<key>]", HTML-escaped (the narration is an Html field). */
+    protected static function marker(string $key): string
+    {
+        return '[omnibill:'.htmlspecialchars($key, \ENT_QUOTES | \ENT_HTML5, 'UTF-8').']';
+    }
+
     /** An amount as Odoo reads and writes it: a float of the company's currency. */
     protected static function float(int $minor): float
     {

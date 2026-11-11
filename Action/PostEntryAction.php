@@ -14,6 +14,10 @@ use Omnibill\Request\Request;
  * go as the application gives them, on their accounts - Odoo's own tax
  * computation is not triggered (no tax_ids): the books' VAT stays the
  * application's, to the cent.
+ *
+ * The entry's key (the ledger's source) goes in ref when there is no
+ * piece, and since omnibill 1.2 in the narration too, as
+ * "[omnibill:<key>]" (self::marker()): findEntry() finds it there.
  */
 final class PostEntryAction extends AbstractAction
 {
@@ -53,6 +57,7 @@ final class PostEntryAction extends AbstractAction
             'journal_id' => $journal,
             'date' => $entry->date->format('Y-m-d'),
             'ref' => $entry->piece ?? $entry->key,
+            'narration' => null !== $entry->key ? self::marker($entry->key) : null,
             'line_ids' => $lines,
         ], static fn ($v) => null !== $v));
         if ($this->post) {
