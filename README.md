@@ -23,6 +23,14 @@ Written from Odoo 19's external API documentation and its server's code, read on
 [Documentation](docs/index.md): the calls, the options, how entries and contacts map, what is not
 carried, Odoo's terms.
 
+## Install
+
+```sh
+composer require omnibill/odoo
+```
+
+It brings the family's core, `omnisense/omnibill`, and `omnisense/contracts` with it. **An Odoo database (Odoo 19 or later, online or self-hosted) and a user's API key are needed.** The tests run on recorded answers.
+
 ## Usage policy
 
 `policy.json`, read on 2026-11-10 in [Odoo's external API reference](https://www.odoo.com/documentation/19.0/developer/reference/external_api.html):
